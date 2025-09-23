@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -233,7 +234,6 @@
         document.body.style.opacity = "1";
       };
       img.onerror = () => {
-        
         document.body.style.opacity = "1";
       };
     };
@@ -313,6 +313,17 @@
         }
       }
 
+      // Add page numbers at bottom center of each page
+      const pageCount = doc.getNumberOfPages();
+      doc.setFontSize(10);
+      doc.setFont("Times", "italic");
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        const pageNumberText = `Page ${i} of ${pageCount}`;
+        const textWidth = doc.getTextWidth(pageNumberText);
+        doc.text(pageNumberText, (pageWidth - textWidth) / 2, pageHeight - 10);
+      }
+
       doc.save(`${titleText}.pdf`);
     }
 
@@ -327,3 +338,4 @@
   </script>
 </body>
 </html>
+
