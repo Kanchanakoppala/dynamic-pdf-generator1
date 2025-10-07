@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,11 +13,11 @@
 
   <style>
     body {
-      background-color: #222; 
+      background-color: #222;
       background-image: url("https://images.unsplash.com/photo-1689946242927-0537a5aa6d19?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDI2fHx8ZW58MHx8fHx8");
       background-size: cover;
       background-position: center;
-      opacity: 0; 
+      opacity: 0;
       transition: opacity 1s ease;
       will-change: opacity;
       margin: 0;
@@ -27,9 +25,9 @@
     }
 
     .btn.btn-info {
-      width: auto !important;     
-      display: inline-block !important;  
-      white-space: nowrap; 
+      width: auto !important;
+      display: inline-block !important;
+      white-space: nowrap;
     }
 
     .backgroundimage {
@@ -133,19 +131,23 @@
       text-align: center;
     }
 
+    /* Button style and hover effect */
     #button {
       border-radius: 20px;
       margin: 20px;
       border-color: rgb(220, 255, 247);
-      background-color: aqua;
-      background-color:transparent;
+      background-color: transparent;
       color: blue;
       font-style: italic;
-      padding: 9px;
-      font-weight:bold;
-     
+      padding: 9px 20px;
+      font-weight: bold;
+      font-size: 16px;
+      transition: all 0.4s ease;
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+      position: relative;
+      overflow: hidden;
     }
-        #button:hover {
+    #button:hover {
       background-color: rgba(0, 255, 255, 0.2);
       color: purple;
       transform: scale(1.05);
@@ -178,9 +180,10 @@
     input[type="file"] {
       display: none;
     }
+
     .bg-white {
-  background-color: #fffff0 !important;
-}
+      background-color: #fffff0 !important;
+    }
 
   </style>
 </head>
@@ -196,12 +199,11 @@
       <p>
         1. Title is optional, but content is mandatory.<br>
         2. Use Shift+Click to select multiple images at once.<br>
-        3. Selected images will not be shown on the screen,but added to your pdf.<br>
+        3. Selected images will not be shown on the screen, but added to your PDF.<br>
         4. PDF will automatically create new pages if needed.<br>
         5. Enable downloads/pop-ups in your browser.<br>
-        6.A preview of your PDF will be shown first. If you’re satisfied, you can then download it.<br>
+        6. A preview of your PDF will be shown first. If you’re satisfied, you can then download it.<br>
         7. Use the Back button to return here.<br>
-        
       </p>
       <div style="display: inline-block;">
         <button class="btn btn-info" onclick="display('sectionMain')">click here to generate PDF</button>
@@ -226,7 +228,7 @@
           <input type="file" id="imageInput" multiple />
 
           <div class="d-flex justify-content-center">
-            <button id="button" onclick="translatingToPDF()">Preview& Download PDF⬇️</button>
+            <button id="button" onclick="translatingToPDF()">Preview & Download PDF⬇️</button>
           </div>
 
           <div class="d-flex justify-content-start mt-3">
@@ -239,7 +241,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-   
     window.onload = () => {
       const img = new Image();
       img.src = "https://images.unsplash.com/photo-1667596023184-79b24a3e5a23?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDl8fHxlbnwwfHx8fHw%3D";
@@ -279,6 +280,7 @@
       const margin = 15;
       let cursorY = margin;
 
+    
       doc.setFontSize(22);
       doc.setFont("Times", "bold");
       const titleText = title || "Untitled";
@@ -288,6 +290,7 @@
       doc.line(xCenter, cursorY + 1, xCenter + textWidth, cursorY + 1);
       cursorY += 15;
 
+     
       doc.setFontSize(16);
       doc.setFont("Times", "normal");
       const maxLineWidth = pageWidth - margin * 2;
@@ -303,6 +306,7 @@
         cursorY += lineHeight;
       }
 
+     
       const imageWidth = 100;
       const imageHeight = 100;
 
@@ -326,23 +330,28 @@
         }
       }
 
-     
+      
       const pageCount = doc.getNumberOfPages();
       doc.setFontSize(10);
       doc.setFont("Times", "italic");
       for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    const pageNumberText = `Page ${i} of ${pageCount}`;
-    const textWidth = doc.getTextWidth(pageNumberText);
-    doc.text(pageNumberText, (pageWidth - textWidth) / 2, pageHeight - 10);
-}
+        doc.setPage(i);
+        const pageNumberText = `Page ${i} of ${pageCount}`;
+        const tw = doc.getTextWidth(pageNumberText);
+        doc.text(pageNumberText, (pageWidth - tw) / 2, pageHeight - 10);
+      }
 
+      
+      const pdfBlob = doc.output('blob');
+      const blobUrl = URL.createObjectURL(pdfBlob);
 
-const pdfBlob = doc.output('blob');
-const blobUrl = URL.createObjectURL(pdfBlob);
-window.open(blobUrl, '_blank');
-    doc.output('bloburl'); 
-
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = 'generated.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
     }
 
     function readFileAsDataURL(file) {
