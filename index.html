@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,11 +14,11 @@
 
   <style>
     body {
-      background-color: #222;
+      background-color: #222; 
       background-image: url("https://images.unsplash.com/photo-1689946242927-0537a5aa6d19?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDI2fHx8ZW58MHx8fHx8");
       background-size: cover;
       background-position: center;
-      opacity: 0;
+      opacity: 0; /* start hidden */
       transition: opacity 1s ease;
       will-change: opacity;
       margin: 0;
@@ -25,9 +26,9 @@
     }
 
     .btn.btn-info {
-      width: auto !important;
-      display: inline-block !important;
-      white-space: nowrap;
+      width: auto !important;     
+      display: inline-block !important;  
+      white-space: nowrap; 
     }
 
     .backgroundimage {
@@ -131,28 +132,22 @@
       text-align: center;
     }
 
-    /* Button style and hover effect */
     #button {
       border-radius: 20px;
       margin: 20px;
       border-color: rgb(220, 255, 247);
-      background-color: transparent;
+      background-color: aqua;
       color: blue;
       font-style: italic;
-      padding: 9px 20px;
-      font-weight: bold;
-      font-size: 16px;
-      transition: all 0.4s ease;
-      box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-      position: relative;
-      overflow: hidden;
+      padding: 5px;
+      font-weight:bold;
     }
     #button:hover {
-      background-color: rgba(0, 255, 255, 0.2);
-      color: purple;
-      transform: scale(1.05);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    }
+  background-color: rgba(0, 255, 255, 0.2);
+  color: purple;
+  transform: scale(1.05);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
 
     .custom-file-upload {
       display: inline-block;
@@ -180,10 +175,9 @@
     input[type="file"] {
       display: none;
     }
-
     .bg-white {
-      background-color: #fffff0 !important;
-    }
+  background-color: #fffff0 !important;
+}
 
   </style>
 </head>
@@ -199,10 +193,10 @@
       <p>
         1. Title is optional, but content is mandatory.<br>
         2. Use Shift+Click to select multiple images at once.<br>
-        3. Selected images will not be shown on the screen, but added to your PDF.<br>
+        3. Selected images will not be shown on the screen.<br>
         4. PDF will automatically create new pages if needed.<br>
         5. Enable downloads/pop-ups in your browser.<br>
-        6. A preview of your PDF will be shown first. If you’re satisfied, you can then download it.<br>
+        6. A preview and download button both will be available.<br>
         7. Use the Back button to return here.<br>
       </p>
       <div style="display: inline-block;">
@@ -227,12 +221,14 @@
           <label for="imageInput" class="custom-file-upload">Choose Images</label>
           <input type="file" id="imageInput" multiple />
 
-          <div class="d-flex justify-content-center">
-            <button id="button" onclick="translatingToPDF()">Preview & Download PDF⬇️</button>
-          </div>
+         <div class="d-flex justify-content-center flex-wrap">
+  <button id="button" onclick="previewPDF()">👀 Preview PDF</button>
+  <button id="button" onclick="downloadPDF()">⬇️ Download PDF</button>
+</div>
+
 
           <div class="d-flex justify-content-start mt-3">
-            <button class="btn btn-info" onclick="display('sectionHome')">Back</button>
+            <button class="btn btn-primary" onclick="display('sectionHome')">Back</button>
           </div>
         </div>
       </div>
@@ -241,127 +237,151 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    window.onload = () => {
-      const img = new Image();
-      img.src = "https://images.unsplash.com/photo-1667596023184-79b24a3e5a23?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDl8fHxlbnwwfHx8fHw%3D";
-      img.onload = () => {
-        document.body.style.opacity = "1";
-      };
-      img.onerror = () => {
-        document.body.style.opacity = "1";
-      };
-    };
+  window.onload = () => {
+    const img = new Image();
+    img.src = "https://images.unsplash.com/photo-1667596023184-79b24a3e5a23?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDl8fHxlbnwwfHx8fHw%3D";
+    img.onload = () => document.body.style.opacity = "1";
+    img.onerror = () => document.body.style.opacity = "1";
+  };
 
-    const { jsPDF } = window.jspdf;
+  const { jsPDF } = window.jspdf;
 
-    function display(sectionId) {
-      document.getElementById("sectionHome").style.display = "none";
-      document.getElementById("sectionMain").style.display = "none";
-      document.getElementById(sectionId).style.display = "block";
+  function display(sectionId) {
+    document.getElementById("sectionHome").style.display = "none";
+    document.getElementById("sectionMain").style.display = "none";
+    document.getElementById(sectionId).style.display = "block";
+  }
+
+  function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = e => reject(e);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function generatePDFBlob() {
+    const title = document.getElementById('titletext').value.trim();
+    const content = document.getElementById('usertext').value.trim();
+    const imageFiles = document.getElementById('imageInput').files;
+
+    if (!title && !content) {
+      alert("Please enter a title and content.");
+      return null;
+    }
+    if (!content) {
+      alert("Please enter content.");
+      return null;
     }
 
-    async function translatingToPDF() {
-      const title = document.getElementById('titletext').value.trim();
-      const content = document.getElementById('usertext').value.trim();
-      const imageFiles = document.getElementById('imageInput').files;
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    let cursorY = margin;
 
-      if (!title && !content) {
-        alert("Please enter a title and content.");
-        return;
+    doc.setFontSize(22);
+    doc.setFont("Times", "bold");
+    const titleText = title || "Untitled";
+    const textWidth = doc.getTextWidth(titleText);
+    const xCenter = (pageWidth - textWidth) / 2;
+    doc.text(titleText, xCenter, cursorY);
+    doc.line(xCenter, cursorY + 1, xCenter + textWidth, cursorY + 1);
+    cursorY += 15;
+
+    doc.setFontSize(16);
+    doc.setFont("Times", "normal");
+    const maxLineWidth = pageWidth - margin * 2;
+    const lineHeight = 10;
+    const lines = doc.splitTextToSize(content, maxLineWidth);
+
+    for (let i = 0; i < lines.length; i++) {
+      if (cursorY + lineHeight > pageHeight - margin) {
+        doc.addPage();
+        cursorY = margin;
       }
-      if (!content) {
-        alert("Please enter content.");
-        return;
-      }
+      doc.text(lines[i], margin, cursorY);
+      cursorY += lineHeight;
+    }
 
-      const doc = new jsPDF();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const margin = 15;
-      let cursorY = margin;
+    const imageWidth = 100;
+    const imageHeight = 100;
 
-    
-      doc.setFontSize(22);
-      doc.setFont("Times", "bold");
-      const titleText = title || "Untitled";
-      const textWidth = doc.getTextWidth(titleText);
-      const xCenter = (pageWidth - textWidth) / 2;
-      doc.text(titleText, xCenter, cursorY);
-      doc.line(xCenter, cursorY + 1, xCenter + textWidth, cursorY + 1);
-      cursorY += 15;
-
-     
-      doc.setFontSize(16);
-      doc.setFont("Times", "normal");
-      const maxLineWidth = pageWidth - margin * 2;
-      const lineHeight = 10;
-      const lines = doc.splitTextToSize(content, maxLineWidth);
-
-      for (let i = 0; i < lines.length; i++) {
-        if (cursorY + lineHeight > pageHeight - margin) {
+    for (let i = 0; i < imageFiles.length; i++) {
+      try {
+        const imageDataUrl = await readFileAsDataURL(imageFiles[i]);
+        if (cursorY + imageHeight + 20 > pageHeight - margin) {
           doc.addPage();
           cursorY = margin;
         }
-        doc.text(lines[i], margin, cursorY);
-        cursorY += lineHeight;
+
+        let imgType = 'JPEG';
+        if (imageDataUrl.startsWith('data:image/png')) imgType = 'PNG';
+        else if (imageDataUrl.startsWith('data:image/webp')) imgType = 'WEBP';
+
+        doc.addImage(imageDataUrl, imgType, margin, cursorY, imageWidth, imageHeight);
+        cursorY += imageHeight + 20;
+      } catch (error) {
+        console.error("Image load failed:", error);
+        alert("Failed to load an image.");
       }
-
-     
-      const imageWidth = 100;
-      const imageHeight = 100;
-
-      for (let i = 0; i < imageFiles.length; i++) {
-        try {
-          const imageDataUrl = await readFileAsDataURL(imageFiles[i]);
-          if (cursorY + imageHeight + 20 > pageHeight - margin) {
-            doc.addPage();
-            cursorY = margin;
-          }
-
-          let imgType = 'JPEG';
-          if (imageDataUrl.startsWith('data:image/png')) imgType = 'PNG';
-          else if (imageDataUrl.startsWith('data:image/webp')) imgType = 'WEBP';
-
-          doc.addImage(imageDataUrl, imgType, margin, cursorY, imageWidth, imageHeight);
-          cursorY += imageHeight + 20;
-        } catch (error) {
-          console.error("Image load failed:", error);
-          alert("Failed to load an image.");
-        }
-      }
-
-      
-      const pageCount = doc.getNumberOfPages();
-      doc.setFontSize(10);
-      doc.setFont("Times", "italic");
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        const pageNumberText = `Page ${i} of ${pageCount}`;
-        const tw = doc.getTextWidth(pageNumberText);
-        doc.text(pageNumberText, (pageWidth - tw) / 2, pageHeight - 10);
-      }
-
-      
-      const pdfBlob = doc.output('blob');
-      const blobUrl = URL.createObjectURL(pdfBlob);
-
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = 'generated.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
     }
 
-    function readFileAsDataURL(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.onerror = e => reject(e);
-        reader.readAsDataURL(file);
-      });
+   
+    const pageCount = doc.getNumberOfPages();
+    doc.setFontSize(10);
+    doc.setFont("Times", "italic");
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      const pageNumberText = `Page ${i} of ${pageCount}`;
+      const textWidth = doc.getTextWidth(pageNumberText);
+      doc.text(pageNumberText, (pageWidth - textWidth) / 2, pageHeight - 10);
     }
-  </script>
+
+    return { blob: doc.output('blob'), titleText };
+  }
+
+  async function previewPDF() {
+    const result = await generatePDFBlob();
+    if (!result) return;
+    
+    const { blob, titleText } = result;
+    const blobUrl = URL.createObjectURL(blob);
+
+    
+    window.open(blobUrl, '_blank');
+
+   
+    const downloadLink = document.createElement('a');
+    downloadLink.href = blobUrl;
+    downloadLink.download = `${titleText.replace(/\s+/g, "_") || 'document'}.pdf`;
+    downloadLink.style.display = "inline-block";
+    downloadLink.style.marginTop = "15px";
+    downloadLink.style.fontWeight = "bold";
+    downloadLink.style.color = "blue";
+    downloadLink.style.textDecoration = "underline";
+    downloadLink.id = "manualDownloadLink";
+
+    
+    const existing = document.getElementById("manualDownloadLink");
+    if (!existing) {
+      document.querySelector(".d-flex.justify-content-center").appendChild(downloadLink);
+    }
+  }
+
+  async function downloadPDF() {
+    const result = await generatePDFBlob();
+    if (!result) return;
+    
+    const { blob, titleText } = result;
+    const blobUrl = URL.createObjectURL(blob);
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = blobUrl;
+    downloadLink.download = `${titleText.replace(/\s+/g, "_") || 'document'}.pdf`;
+    downloadLink.click();
+  }
+</script>  
 </body>
 </html>
